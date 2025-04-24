@@ -27,11 +27,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # ✅ Enable linters
+          # ✅ Validation
           VALIDATE_PYTHON: true
-          VALIDATE_YAML: true
+          VALIDATE_YAML_PRETTIER: true
           VALIDATE_HTML_PRETTIER: true
 
-          # ✅ Only use FIX_* if VALIDATE_* is true
-          FIX_HTML_PRETTIER: true
+          # ✅ Formatting Fixes (Only use when VALIDATE_* is true)
           FIX_YAML_PRETTIER: true
+          FIX_HTML_PRETTIER: true
