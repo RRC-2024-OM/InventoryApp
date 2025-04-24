@@ -27,14 +27,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # ✅ Only INCLUDE the linters you want
+          # ✅ Only include the linters you want
           VALIDATE_PYTHON: true
           VALIDATE_HTML: true
           VALIDATE_YAML: true
 
-          # ✅ Auto-fix style for HTML and YAML (optional)
+          # ✅ Optional: Enable automatic formatting fixes
           FIX_HTML_PRETTIER: true
           FIX_YAML_PRETTIER: true
-
-          # ✅ Fail the build on lint errors
-          DISABLE_ERRORS: false
