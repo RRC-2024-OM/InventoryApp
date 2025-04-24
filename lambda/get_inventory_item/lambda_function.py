@@ -1,29 +1,34 @@
-#   lambda/get_inventory_item/lambda_function.py
-import json
 import boto3
+import json
+from botocore.exceptions import ClientError
 
-TABLE_NAME = "Inventory"
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(TABLE_NAME)
+table = dynamodb.Table('Inventory')
 
 def lambda_handler(event, context):
     try:
-        item_id = event['pathParameters']['id'] # Get item ID from path
+        item_id = event.get('pathParameters', {}).get('id')
+        if not item_id:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Missing item_id in path'})
+            }
 
-        response = table.get_item(Key={'Item id': item_id}) # Get item from table
+        response = table.get_item(Key={'item_id': item_id})
         item = response.get('Item')
 
-        if item:
-            return {
-                'statusCode': 200,
-                'body': json.dumps(item)
-            }
-        else:
+        if not item:
             return {
                 'statusCode': 404,
                 'body': json.dumps({'error': 'Item not found'})
             }
-    except Exception as e:
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps(item)
+        }
+
+    except ClientError as e:
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})

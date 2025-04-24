@@ -1,30 +1,37 @@
-#   lambda/get_location_inventory_items/lambda_function.py
-import json
 import boto3
+import json
+from botocore.exceptions import ClientError
 
-TABLE_NAME = "Inventory"
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table(TABLE_NAME)
-INDEX_NAME = "Item location_id-Item id-index" # GSI name
+table = dynamodb.Table('Inventory')
 
 def lambda_handler(event, context):
     try:
-        location_id = int(event['pathParameters']['id']) # Get location ID from path
+        location_id = event.get('pathParameters', {}).get('id')
+        if not location_id:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Missing location_id in path'})
+            }
 
-        # Query the GSI to get items for the given location
         response = table.query(
-            IndexName=INDEX_NAME,
-            KeyConditionExpression='Item location_id = :loc_id',
-            ExpressionAttributeValues={':loc_id': location_id}
+            IndexName='GSI_Location_Inventory',
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('location_id').eq(int(location_id))
         )
-        items = response.get('Items', [])
 
+        items = response.get('Items', [])
         return {
             'statusCode': 200,
             'body': json.dumps(items)
         }
-    except Exception as e:
+
+    except ClientError as e:
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
+        }
+    except ValueError:
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'error': 'Invalid location_id. Must be a number.'})
         }
